@@ -4,7 +4,7 @@ import hashlib
 import requests
 import feedparser
 
-print("🚀 Gengo Hunter avviato")
+print("TEST GENGO HUNTER AVVIATO")
 
 RSS_URL = "https://gengo.com/rss/available_jobs/7f2172912f19d67534e9668a57900dec5545d95a20652351863981/"
 
