@@ -16,16 +16,6 @@ MEMORY_FILE = "seen_jobs.json"
 
 
 print("🚀 Gengo Hunter avviato")
-send_test = True
-
-if send_test:
-    requests.post(
-        f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-        json={
-            "chat_id": CHAT_ID,
-            "text": "✅ Test Gengo Hunter: Telegram collegato correttamente!"
-        }
-    )
 
 
 def send_telegram(message):
@@ -38,9 +28,14 @@ def send_telegram(message):
         "disable_web_page_preview": False
     }
 
-    response = requests.post(url, json=data)
+    response = requests.post(
+        url,
+        json=data,
+        timeout=10
+    )
 
     print("Telegram status:", response.status_code)
+    print(response.text)
 
 
 
@@ -62,28 +57,53 @@ def save_seen(data):
 
 
 
+def get_feed():
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; Feeder RSS Reader)"
+    }
+
+    try:
+
+        response = requests.get(
+            RSS_URL,
+            headers=headers,
+            timeout=15
+        )
+
+        print("HTTP Gengo:", response.status_code)
+
+        if response.status_code != 200:
+            print("Feed non disponibile")
+            return None
+
+
+        return feedparser.parse(response.text)
+
+
+    except Exception as e:
+
+        print("Errore lettura feed:", e)
+        return None
+
+
+
 def main():
 
     seen = load_seen()
 
-    headers = {
-    "User-Agent": "Mozilla/5.0 (compatible; RSS Reader)"
-}
+    feed = get_feed()
 
-response = requests.get(
-    RSS_URL,
-    headers=headers
-)
 
-print("HTTP Gengo:", response.status_code)
+    if feed is None:
+        return
 
-feed = feedparser.parse(response.text)
 
-    print("Feed status:", getattr(feed, "status", "n/a"))
     print("Jobs trovati:", len(feed.entries))
 
 
     for entry in feed.entries:
+
 
         job_id = hashlib.md5(
             entry.link.encode()
@@ -110,12 +130,17 @@ feed = feedparser.parse(response.text)
 
         send_telegram(message)
 
+
         seen.append(job_id)
+
 
 
     save_seen(seen)
 
 
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
