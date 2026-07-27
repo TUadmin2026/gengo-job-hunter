@@ -1,6 +1,7 @@
 import os
 import json
 import hashlib
+import time
 import requests
 import feedparser
 
@@ -28,24 +29,32 @@ def send_telegram(message):
         "disable_web_page_preview": False
     }
 
-    response = requests.post(
-        url,
-        json=data,
-        timeout=10
-    )
+    try:
 
-    print("Telegram status:", response.status_code)
-    print(response.text)
+        response = requests.post(
+            url,
+            json=data,
+            timeout=10
+        )
+
+        print("Telegram status:", response.status_code)
+        print(response.text)
+
+    except Exception as e:
+
+        print("Errore Telegram:", e)
 
 
 
 def load_seen():
 
     try:
+
         with open(MEMORY_FILE, "r") as f:
             return json.load(f)
 
     except:
+
         return []
 
 
@@ -60,31 +69,54 @@ def save_seen(data):
 def get_feed():
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; Feeder RSS Reader)"
+        "User-Agent": "Feeder RSS Reader"
     }
 
-    try:
 
-        response = requests.get(
-            RSS_URL,
-            headers=headers,
-            timeout=15
-        )
+    for tentativo in range(1, 4):
 
-        print("HTTP Gengo:", response.status_code)
+        try:
 
-        if response.status_code != 200:
-            print("Feed non disponibile")
-            return None
+            response = requests.get(
+                RSS_URL,
+                headers=headers,
+                timeout=15
+            )
 
 
-        return feedparser.parse(response.text)
+            print(
+                f"Tentativo {tentativo} - HTTP Gengo:",
+                response.status_code
+            )
 
 
-    except Exception as e:
+            if response.status_code == 200:
 
-        print("Errore lettura feed:", e)
-        return None
+                return feedparser.parse(response.text)
+
+
+            elif response.status_code == 429:
+
+                print("Gengo ha risposto 429. Attendo 10 secondi...")
+                time.sleep(10)
+
+
+            else:
+
+                print("Errore HTTP:", response.status_code)
+                time.sleep(5)
+
+
+        except Exception as e:
+
+            print("Errore richiesta feed:", e)
+            time.sleep(5)
+
+
+
+    print("❌ Feed non disponibile dopo 3 tentativi")
+
+    return None
 
 
 
@@ -92,10 +124,12 @@ def main():
 
     seen = load_seen()
 
+
     feed = get_feed()
 
 
     if feed is None:
+
         return
 
 
@@ -110,8 +144,11 @@ def main():
         ).hexdigest()
 
 
+
         if job_id in seen:
+
             continue
+
 
 
         message = f"""
@@ -138,9 +175,6 @@ def main():
     save_seen(seen)
 
 
-
-if __name__ == "__main__":
-    main()
 
 if __name__ == "__main__":
     main()
