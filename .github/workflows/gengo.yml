@@ -32,11 +32,15 @@ jobs:
 
 
       - name: Controlla nuovi lavori Gengo
-        env:
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: |
-          python gengo_hunter.py
+  env:
+    TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+    CHAT_ID: ${{ secrets.CHAT_ID }}
+  run: |
+    echo "TEST WORKFLOW OK"
+    ls -la
+    echo "CONTENUTO FILE:"
+    head -20 gengo_hunter.py
+    python gengo_hunter.py
 
 
       - name: Salva memoria lavori
