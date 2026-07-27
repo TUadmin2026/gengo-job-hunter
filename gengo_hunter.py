@@ -56,7 +56,6 @@ def main():
     seen = load_seen()
 
     feed = feedparser.parse(RSS_URL)
-
 print("Feed status:", feed.status if hasattr(feed, "status") else "n/a")
 print("Jobs trovati:", len(feed.entries))
 
