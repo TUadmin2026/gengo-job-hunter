@@ -1,0 +1,51 @@
+name: Gengo Job Hunter
+
+on:
+  schedule:
+    - cron: "* * * * *"
+
+  workflow_dispatch:
+
+
+jobs:
+
+  check-gengo:
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+      - name: Scarica repository
+        uses: actions/checkout@v4
+
+
+      - name: Configura Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+
+      - name: Installa dipendenze
+        run: |
+          pip install -r requirements.txt
+
+
+      - name: Controlla nuovi lavori Gengo
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: |
+          python gengo_hunter.py
+
+
+      - name: Salva memoria lavori
+        run: |
+          git config --global user.name "Gengo Hunter"
+          git config --global user.email "gengo@hunter.com"
+
+          git add seen_jobs.json || true
+
+          git commit -m "Update seen jobs" || true
+
+          git push || true
