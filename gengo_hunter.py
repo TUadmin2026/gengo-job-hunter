@@ -16,6 +16,16 @@ MEMORY_FILE = "seen_jobs.json"
 
 
 print("🚀 Gengo Hunter avviato")
+send_test = True
+
+if send_test:
+    requests.post(
+        f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+        json={
+            "chat_id": CHAT_ID,
+            "text": "✅ Test Gengo Hunter: Telegram collegato correttamente!"
+        }
+    )
 
 
 def send_telegram(message):
