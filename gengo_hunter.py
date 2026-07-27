@@ -66,7 +66,18 @@ def main():
 
     seen = load_seen()
 
-    feed = feedparser.parse(RSS_URL)
+    headers = {
+    "User-Agent": "Mozilla/5.0 (compatible; RSS Reader)"
+}
+
+response = requests.get(
+    RSS_URL,
+    headers=headers
+)
+
+print("HTTP Gengo:", response.status_code)
+
+feed = feedparser.parse(response.text)
 
     print("Feed status:", getattr(feed, "status", "n/a"))
     print("Jobs trovati:", len(feed.entries))
